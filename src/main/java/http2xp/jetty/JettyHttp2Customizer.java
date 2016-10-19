@@ -1,10 +1,8 @@
 package http2xp.jetty;
 
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
@@ -43,37 +41,22 @@ public class JettyHttp2Customizer implements EmbeddedServletContainerCustomizer 
                 if (serverProperties.getSsl() != null && serverProperties.getSsl().isEnabled()) {
                     ServerConnector connector = (ServerConnector) server.getConnectors()[0];
                     int port = connector.getPort();
-                    SslContextFactory sslContextFactory = connector
-                            .getConnectionFactory(SslConnectionFactory.class).getSslContextFactory();
                     HttpConfiguration httpConfiguration = connector
                             .getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
-
-                    configureSslContextFactory(sslContextFactory);
-                    ConnectionFactory[] connectionFactories = createConnectionFactories(sslContextFactory, httpConfiguration);
+                    ConnectionFactory[] connectionFactories = createConnectionFactories(httpConfiguration);
 
                     ServerConnector serverConnector = new ServerConnector(server, connectionFactories);
                     serverConnector.setPort(port);
-                    // override existing connectors with new ones
                     server.setConnectors(new Connector[]{serverConnector});
                 }
             }
 
-            private void configureSslContextFactory(SslContextFactory sslContextFactory) {
-                sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                sslContextFactory.setUseCipherSuitesOrder(true);
-            }
-
-            private ConnectionFactory[] createConnectionFactories(SslContextFactory sslContextFactory,
-                                                                  HttpConfiguration httpConfiguration) {
-                SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, "alpn");
-                ALPNServerConnectionFactory alpnServerConnectionFactory =
-                        new ALPNServerConnectionFactory("h2", "h2-17", "h2-16", "h2-15", "h2-14");
+            private ConnectionFactory[] createConnectionFactories(HttpConfiguration httpConfiguration) {
 
                 HTTP2ServerConnectionFactory http2ServerConnectionFactory =
                         new HTTP2ServerConnectionFactory(httpConfiguration);
 
-                return new ConnectionFactory[]{sslConnectionFactory, alpnServerConnectionFactory,
-                        http2ServerConnectionFactory};
+                return new ConnectionFactory[]{http2ServerConnectionFactory};
             }
         });
     }

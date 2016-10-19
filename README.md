@@ -14,3 +14,10 @@ In your IDE, you have to run the `Http2ExperimentsApplication` class and customi
 
 ## License
 This project is released under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+
+## Testing
+
+Type following url's on your browser
+
+http://localhost:7777/hello
+http://localhost:7777/book
