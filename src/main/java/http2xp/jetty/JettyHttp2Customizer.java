@@ -38,17 +38,15 @@ public class JettyHttp2Customizer implements EmbeddedServletContainerCustomizer 
         factory.addServerCustomizers(new JettyServerCustomizer() {
             @Override
             public void customize(Server server) {
-                if (serverProperties.getSsl() != null && serverProperties.getSsl().isEnabled()) {
-                    ServerConnector connector = (ServerConnector) server.getConnectors()[0];
-                    int port = connector.getPort();
-                    HttpConfiguration httpConfiguration = connector
-                            .getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
-                    ConnectionFactory[] connectionFactories = createConnectionFactories(httpConfiguration);
+                ServerConnector connector = (ServerConnector) server.getConnectors()[0];
+                int port = connector.getPort();
+                HttpConfiguration httpConfiguration = connector
+                        .getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
+                ConnectionFactory[] connectionFactories = createConnectionFactories(httpConfiguration);
 
-                    ServerConnector serverConnector = new ServerConnector(server, connectionFactories);
-                    serverConnector.setPort(port);
-                    server.setConnectors(new Connector[]{serverConnector});
-                }
+                ServerConnector serverConnector = new ServerConnector(server, connectionFactories);
+                serverConnector.setPort(port);
+                server.setConnectors(new Connector[]{serverConnector});
             }
 
             private ConnectionFactory[] createConnectionFactories(HttpConfiguration httpConfiguration) {
